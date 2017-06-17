@@ -1,4 +1,4 @@
-package tiruyasha.dndcombattracker;
+package dnd.combattracker;
 
 import org.junit.Test;
 
