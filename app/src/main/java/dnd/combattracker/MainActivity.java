@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        loadEncounterListFragment();
     }
 
     @Override
@@ -57,12 +59,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_add_encounter) {
             Intent intent = new Intent(this, AddEncounterActivity.class);
             startActivity(intent);
@@ -81,6 +79,17 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void loadEncounterListFragment() {
+        EncounterListFragment fragment = new EncounterListFragment();
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        transaction.replace(R.id.frame_layout_main,fragment);
+        transaction.addToBackStack("encounterList");
+
+        transaction.commit();
     }
 
     private void switchFragment(String fragment, String backStack) {

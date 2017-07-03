@@ -23,6 +23,10 @@
             android:name=".AddEncounterActivity"
             android:label= "@string/title_activity_add_encounter"
             android:theme="@style/AppTheme.NoActionBar" />
+        <provider
+            android:name="dnd.combattracker.repository.EncounterProvider"
+            android:authorities="dnd.combattracker.repository.EncounterProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>

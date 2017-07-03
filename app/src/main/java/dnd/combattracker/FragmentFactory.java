@@ -8,7 +8,7 @@ public class FragmentFactory {
 
         switch (fragmentName){
             case "AddEncounterFragment":
-                fragment = new AddEncounterFragment();
+                //fragment = new AddEncounterFragment();
                 break;
         }
 
