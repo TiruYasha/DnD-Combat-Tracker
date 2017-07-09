@@ -1,34 +1,42 @@
 package dnd.combattracker.adapters;
 
 
-import android.content.Context;
-import android.database.Cursor;
-import android.support.v4.widget.CursorAdapter;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import dnd.combattracker.R;
-import dnd.combattracker.repository.EncounterContract.EncounterEntry;
+import dnd.combattracker.adapters.viewholders.EncounterViewHolder;
 
-public class EncounterAdapter extends CursorAdapter {
-    private LayoutInflater encounterInflater;
+public class EncounterAdapter extends RecyclerView.Adapter<EncounterViewHolder> implements View.OnClickListener {
+    private String[] dataSet;
+    private View.OnClickListener listener;
 
-    public EncounterAdapter(Context context, Cursor cursor, int flags){
-        super(context, cursor, flags);
-        encounterInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public EncounterAdapter(String[] dataSet, View.OnClickListener listener){
+        this.dataSet = dataSet;
+        this.listener = listener;
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return encounterInflater.inflate(R.layout.list_item_encounter, parent, false);
+    public EncounterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_encounter, parent, false);
+
+        return new EncounterViewHolder(v, this);
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        TextView textViewName = (TextView) view.findViewById(R.id.list_item_encounter_name);
-        String name = cursor.getString(cursor.getColumnIndex(EncounterEntry.COLUMN_NAME));
-        textViewName.setText(name);
+    public void onBindViewHolder(EncounterViewHolder holder, int position) {
+        holder.setData(dataSet, position);
+    }
+
+    @Override
+    public int getItemCount() {
+        return dataSet.length;
+    }
+
+    @Override
+    public void onClick(View v) {
+        listener.onClick(v);
     }
 }

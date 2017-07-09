@@ -30,6 +30,7 @@ public class EncounterProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
+        sUriMatcher.addURI(AUTHORITY, BASE_PATH, ENCOUNTERS);
         sUriMatcher.addURI(AUTHORITY, BASE_PATH + "/offset/" + "#", ENCOUNTERS);
         sUriMatcher.addURI(AUTHORITY, BASE_PATH + "/#", ENCOUNTER_ID);
     }
@@ -57,7 +58,7 @@ public class EncounterProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)) {
             case ENCOUNTERS:
-                limitArg = Integer.parseInt(uri.getLastPathSegment()) + ", " + 30;
+
                 break;
             case ENCOUNTER_ID:
                 queryBuilder.appendWhere(EncounterContract.EncounterEntry._ID + "=" + uri.getLastPathSegment());
@@ -69,7 +70,8 @@ public class EncounterProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder, limitArg);
 
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        cursor.setNotificationUri(getContext().getContentResolver(), CONTENT_URI);
+
 
         return cursor;
     }
@@ -95,7 +97,7 @@ public class EncounterProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unkown URI: " + uri);
         }
 
-        getContext().getContentResolver().notifyChange(uri, null);
+        getContext().getContentResolver().notifyChange(CONTENT_URI, null);
         return Uri.parse(BASE_PATH + "/" + id);
     }
 

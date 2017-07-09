@@ -9,16 +9,28 @@ import android.widget.TextView;
 import dnd.combattracker.R;
 import dnd.combattracker.repository.EncounterContract;
 
-public class EncounterViewHolder extends RecyclerView.ViewHolder {
+public class EncounterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
     public TextView encounterNameTextView;
+    public View.OnClickListener listener;
 
-    public EncounterViewHolder(View itemView) {
+    public EncounterViewHolder(View itemView, View.OnClickListener listener) {
         super(itemView);
         encounterNameTextView = (TextView) itemView.findViewById(R.id.list_item_encounter_name);
+        this.listener = listener;
+        encounterNameTextView.setOnClickListener(this);
     }
 
     public void setData(Cursor c) {
         encounterNameTextView.setText(c.getString(c.getColumnIndex(EncounterContract.EncounterEntry.COLUMN_NAME)));
+    }
+
+    public void setData(String[] data, int position){
+        encounterNameTextView.setText(data[position]);
+    }
+
+    @Override
+    public void onClick(View view) {
+        listener.onClick(view);
     }
 }

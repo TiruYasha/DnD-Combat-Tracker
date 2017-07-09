@@ -2,6 +2,7 @@ package dnd.combattracker;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -10,14 +11,13 @@ import android.view.MenuItem;
 import android.widget.EditText;
 
 import dnd.combattracker.repository.EncounterDbHelper;
+import dnd.combattracker.repository.EncounterProvider;
 
 import static dnd.combattracker.repository.EncounterContract.EncounterEntry;
 
 
 public class AddEncounterActivity extends AppCompatActivity {
 
-    private EncounterDbHelper dbHelper;
-    private SQLiteDatabase db;
     private EditText encounterName;
 
     @Override
@@ -29,9 +29,6 @@ public class AddEncounterActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         encounterName = (EditText) findViewById(R.id.input_encounter_name);
-
-        dbHelper = new EncounterDbHelper(getApplicationContext());
-        db = dbHelper.getWritableDatabase();
     }
 
     @Override
@@ -55,7 +52,6 @@ public class AddEncounterActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        dbHelper.close();
         super.onDestroy();
     }
 
@@ -63,7 +59,9 @@ public class AddEncounterActivity extends AppCompatActivity {
         ContentValues values = new ContentValues();
         values.put(EncounterEntry.COLUMN_NAME, encounterName.getText().toString());
 
-        db.insert(EncounterEntry.TABLE_NAME, null, values);
-        onBackPressed();
+//        db.insert(EncounterEntry.TABLE_NAME, null, values);
+        Uri encounterUri = getContentResolver().insert(EncounterProvider.urlForItems(30), values);
+        //onBackPressed();
+        finish();
     }
 }

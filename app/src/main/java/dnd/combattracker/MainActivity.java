@@ -87,9 +87,14 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
         transaction.replace(R.id.frame_layout_main,fragment);
-        transaction.addToBackStack("encounterList");
+        //transaction.addToBackStack("encounterList");
 
         transaction.commit();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     private void switchFragment(String fragment, String backStack) {
