@@ -1,8 +1,6 @@
 package dnd.combattracker;
 
-import android.content.ContentValues;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,17 +13,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import dnd.combattracker.adapters.EncounterAdapter;
+import dnd.combattracker.adapters.EncounterCursorAdapter;
 import dnd.combattracker.repository.EncounterProvider;
-
-import static dnd.combattracker.repository.EncounterContract.EncounterEntry;
-import static dnd.combattracker.repository.EncounterProvider.CONTENT_URI;
-import static dnd.combattracker.repository.EncounterProvider.urlForItems;
 
 public class EncounterListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener {
 
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter;
+    private EncounterCursorAdapter adapter;
     private LinearLayoutManager layoutManager;
 
     @Override
@@ -43,7 +37,7 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new EncounterAdapter(new String[]{"test", "test2", "test3", "test4", "test 5"}, this);
+        adapter = new EncounterCursorAdapter(null, this);
         recyclerView.setAdapter(adapter);
 
         return view;
@@ -58,18 +52,7 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public void onClick(View view) {
-        addEncounter();
-    }
 
-
-    private void addEncounter() {
-        ContentValues values = new ContentValues();
-        values.put(EncounterEntry.COLUMN_NAME, "testestest");
-
-//        db.insert(EncounterEntry.TABLE_NAME, null, values);
-        Uri encounterUri = getActivity().getContentResolver().insert(CONTENT_URI, values);
-        //onBackPressed();
-        //finish();
     }
 
     @Override
@@ -79,7 +62,7 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        int test = 1;
+        adapter.swapCursor(data);
     }
 
     @Override

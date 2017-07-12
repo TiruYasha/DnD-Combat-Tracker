@@ -60,7 +60,7 @@ public class AddEncounterActivity extends AppCompatActivity {
         values.put(EncounterEntry.COLUMN_NAME, encounterName.getText().toString());
 
 //        db.insert(EncounterEntry.TABLE_NAME, null, values);
-        Uri encounterUri = getContentResolver().insert(EncounterProvider.urlForItems(30), values);
+        Uri encounterUri = getContentResolver().insert(EncounterProvider.CONTENT_URI, values);
         //onBackPressed();
         finish();
     }

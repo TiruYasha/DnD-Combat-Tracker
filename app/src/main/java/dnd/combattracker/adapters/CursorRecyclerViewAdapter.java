@@ -1,32 +1,20 @@
 package dnd.combattracker.adapters;
 
 
-import android.content.Context;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.support.v7.widget.RecyclerView;
 
 public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
-    protected Context context;
-
     private Cursor cursor;
 
+    private int rowIdColumn;
     private boolean dataValid;
 
-    private int rowIdColumn;
-
-    private DataSetObserver dataSetObserver;
-
-    public CursorRecyclerViewAdapter(Context context, Cursor cursor) {
-        this.context = context;
+    public CursorRecyclerViewAdapter(Cursor cursor) {
         this.cursor = cursor;
         dataValid = cursor != null;
         rowIdColumn = dataValid ? this.cursor.getColumnIndex("_id") : -1;
-        dataSetObserver = new NotifyingDataSetObserver();
-        if (this.cursor != null) {
-            this.cursor.registerDataSetObserver(dataSetObserver);
-        }
     }
 
     public Cursor getCursor() {
@@ -35,17 +23,19 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
 
     @Override
     public int getItemCount() {
-        if (dataValid && cursor != null) {
+        if (cursor != null) {
             return cursor.getCount();
         }
+
         return 0;
     }
 
     @Override
     public long getItemId(int position) {
-        if (dataValid && cursor != null && cursor.moveToPosition(position)) {
+        if (cursor != null && cursor.moveToPosition(position)) {
             return cursor.getLong(rowIdColumn);
         }
+
         return 0;
     }
 
@@ -56,6 +46,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
 
     public abstract void onBindViewHolder(VH viewHolder, Cursor cursor);
 
+    @Override
     public void onBindViewHolder(VH viewHolder, int position){
         if (!dataValid) {
             throw new IllegalStateException("this should only be called when the cursor is valid");
@@ -86,15 +77,11 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
         if (newCursor == cursor) {
             return null;
         }
+
         final Cursor oldCursor = cursor;
-        if (oldCursor != null && dataSetObserver != null) {
-            oldCursor.unregisterDataSetObserver(dataSetObserver);
-        }
         cursor = newCursor;
+
         if (cursor != null) {
-            if (dataSetObserver != null) {
-                cursor.registerDataSetObserver(dataSetObserver);
-            }
             rowIdColumn = newCursor.getColumnIndexOrThrow("_id");
             dataValid = true;
             notifyDataSetChanged();
@@ -104,21 +91,5 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
             notifyDataSetChanged();
         }
         return oldCursor;
-    }
-
-    private class NotifyingDataSetObserver extends DataSetObserver {
-        @Override
-        public void onChanged() {
-            super.onChanged();
-            dataValid = true;
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public void onInvalidated() {
-            super.onInvalidated();
-            dataValid = false;
-            notifyDataSetChanged();
-        }
     }
 }

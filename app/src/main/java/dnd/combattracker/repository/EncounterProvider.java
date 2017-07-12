@@ -54,11 +54,9 @@ public class EncounterProvider extends ContentProvider {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
         queryBuilder.setTables(EncounterContract.EncounterEntry.TABLE_NAME);
-        String limitArg = "0";
 
         switch (sUriMatcher.match(uri)) {
             case ENCOUNTERS:
-
                 break;
             case ENCOUNTER_ID:
                 queryBuilder.appendWhere(EncounterContract.EncounterEntry._ID + "=" + uri.getLastPathSegment());
@@ -68,10 +66,9 @@ public class EncounterProvider extends ContentProvider {
         }
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder, limitArg);
+        Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder, null);
 
-        cursor.setNotificationUri(getContext().getContentResolver(), CONTENT_URI);
-
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
         return cursor;
     }
@@ -97,7 +94,7 @@ public class EncounterProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unkown URI: " + uri);
         }
 
-        getContext().getContentResolver().notifyChange(CONTENT_URI, null);
+        getContext().getContentResolver().notifyChange(uri, null);
         return Uri.parse(BASE_PATH + "/" + id);
     }
 
