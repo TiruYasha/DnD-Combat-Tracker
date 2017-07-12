@@ -20,7 +20,6 @@ public final class CombatTrackerContract {
         public static final String TYPE = "type";
         public static final String SUBTYPE = "subtype";
         public static final String ALIGNMENT = "alignment";
-        public static final String ARMOR_CLASS = "armorClass";
         public static final String STRENGTH = "strength";
         public static final String DEXTERITY = "dexterity";
         public static final String CONSTITUTION = "constitution";
@@ -28,6 +27,13 @@ public final class CombatTrackerContract {
         public static final String WISDOM = "wisdom";
         public static final String CHARISMA = "charisma";
         public static final String CHALLENGE_RATING = "challengeRating";
+        public static final String CUSTOM = "custom";
+    }
+
+    public static class EncounterCreatureEntry implements BaseColumns{
+        public static final String TABLE_NAME = "EncounterCreature";
+        public static final String CREATURE_ID = "creatureId";
+        public static final String ENCOUNTER_ID = "encounterId";
     }
 
     public static class SavingThrowEntry implements BaseColumns {
@@ -110,5 +116,4 @@ public final class CombatTrackerContract {
         public static final String DAMAGE_BONUS = "damageBonus";
         public static final String ACTION_CATEGORY = "actionCategory";
     }
-
 }
