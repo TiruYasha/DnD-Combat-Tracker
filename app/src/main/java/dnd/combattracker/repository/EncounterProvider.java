@@ -14,7 +14,7 @@ import android.support.annotation.Nullable;
 
 public class EncounterProvider extends ContentProvider {
 
-    private EncounterDbHelper dbHelper;
+    private CombatTrackerDbHelper dbHelper;
 
     private static final int ENCOUNTERS = 10;
     private static final int ENCOUNTER_ID = 20;
@@ -41,7 +41,7 @@ public class EncounterProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        dbHelper = new EncounterDbHelper(
+        dbHelper = new CombatTrackerDbHelper(
                 getContext()
         );
 
@@ -53,13 +53,13 @@ public class EncounterProvider extends ContentProvider {
     synchronized public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-        queryBuilder.setTables(EncounterContract.EncounterEntry.TABLE_NAME);
+        queryBuilder.setTables(CombatTrackerContract.EncounterEntry.TABLE_NAME);
 
         switch (sUriMatcher.match(uri)) {
             case ENCOUNTERS:
                 break;
             case ENCOUNTER_ID:
-                queryBuilder.appendWhere(EncounterContract.EncounterEntry._ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(CombatTrackerContract.EncounterEntry._ID + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown UrI: " + uri);
@@ -88,7 +88,7 @@ public class EncounterProvider extends ContentProvider {
 
         switch (uriType) {
             case ENCOUNTERS:
-                id = db.insert(EncounterContract.EncounterEntry.TABLE_NAME, null, contentValues);
+                id = db.insert(CombatTrackerContract.EncounterEntry.TABLE_NAME, null, contentValues);
                 break;
             default:
                 throw new IllegalArgumentException("Unkown URI: " + uri);

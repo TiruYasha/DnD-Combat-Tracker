@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import dnd.combattracker.R;
-import dnd.combattracker.repository.EncounterContract;
+import dnd.combattracker.repository.CombatTrackerContract;
 
 public class EncounterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -22,7 +22,7 @@ public class EncounterViewHolder extends RecyclerView.ViewHolder implements View
     }
 
     public void setData(Cursor c) {
-        encounterNameTextView.setText(c.getString(c.getColumnIndex(EncounterContract.EncounterEntry.COLUMN_NAME)));
+        encounterNameTextView.setText(c.getString(c.getColumnIndex(CombatTrackerContract.EncounterEntry.NAME)));
     }
 
     public void setData(String[] data, int position){

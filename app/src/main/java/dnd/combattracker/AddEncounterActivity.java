@@ -1,7 +1,6 @@
 package dnd.combattracker;
 
 import android.content.ContentValues;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,10 +9,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 
-import dnd.combattracker.repository.EncounterDbHelper;
 import dnd.combattracker.repository.EncounterProvider;
 
-import static dnd.combattracker.repository.EncounterContract.EncounterEntry;
+import static dnd.combattracker.repository.CombatTrackerContract.EncounterEntry;
 
 
 public class AddEncounterActivity extends AppCompatActivity {
@@ -57,7 +55,7 @@ public class AddEncounterActivity extends AppCompatActivity {
 
     private void addEncounter() {
         ContentValues values = new ContentValues();
-        values.put(EncounterEntry.COLUMN_NAME, encounterName.getText().toString());
+        values.put(EncounterEntry.NAME, encounterName.getText().toString());
 
 //        db.insert(EncounterEntry.TABLE_NAME, null, values);
         Uri encounterUri = getContentResolver().insert(EncounterProvider.CONTENT_URI, values);

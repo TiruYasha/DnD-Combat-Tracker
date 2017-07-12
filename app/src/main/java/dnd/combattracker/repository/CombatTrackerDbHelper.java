@@ -5,19 +5,19 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class EncounterDbHelper extends SQLiteOpenHelper {
+public class CombatTrackerDbHelper extends SQLiteOpenHelper {
 
 
     private static final String SQL_CREATE_ENCOUNTER = String.format("CREATE TABLE %s (" +
             "%s INTEGER PRIMARY KEY," +
-            "%s TEXT)", EncounterContract.EncounterEntry.TABLE_NAME, EncounterContract.EncounterEntry._ID, EncounterContract.EncounterEntry.COLUMN_NAME);
+            "%s TEXT)", CombatTrackerContract.EncounterEntry.TABLE_NAME, CombatTrackerContract.EncounterEntry._ID, CombatTrackerContract.EncounterEntry.NAME);
 
-    private static final String SQL_DELETE_ENCOUNTER = "DROP TABLE IF EXISTS " + EncounterContract.EncounterEntry.TABLE_NAME;
+    private static final String SQL_DELETE_ENCOUNTER = "DROP TABLE IF EXISTS " + CombatTrackerContract.EncounterEntry.TABLE_NAME;
 
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "CombatTracker.db";
 
-    public EncounterDbHelper(Context context){
+    public CombatTrackerDbHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
