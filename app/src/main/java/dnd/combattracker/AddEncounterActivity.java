@@ -3,6 +3,7 @@ package dnd.combattracker;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -16,7 +17,7 @@ import static dnd.combattracker.repository.CombatTrackerContract.EncounterEntry;
 
 public class AddEncounterActivity extends AppCompatActivity {
 
-    private EditText encounterName;
+    private TextInputEditText encounterName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +27,7 @@ public class AddEncounterActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        encounterName = (EditText) findViewById(R.id.input_encounter_name);
+        encounterName = (TextInputEditText) findViewById(R.id.input_encounter_name);
     }
 
     @Override
