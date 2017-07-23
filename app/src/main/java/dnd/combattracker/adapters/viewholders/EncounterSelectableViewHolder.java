@@ -2,31 +2,35 @@ package dnd.combattracker.adapters.viewholders;
 
 
 import android.database.Cursor;
-import android.support.v7.widget.RecyclerView;
-import android.view.ContextMenu;
-import android.view.Menu;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import dnd.combattracker.R;
+import dnd.combattracker.listeners.OnLongItemClickListener;
 import dnd.combattracker.repository.CombatTrackerContract;
 
-public class EncounterViewHolder extends CustomViewHolder implements View.OnClickListener, View.OnLongClickListener {
+public class EncounterSelectableViewHolder extends CustomViewHolder implements View.OnClickListener {
 
     private TextView encounterNameTextView;
+    private CheckBox encounterCheckBoxView;
 
-    public EncounterViewHolder(View view) {
+    public EncounterSelectableViewHolder(View view) {
         super(view);
 
         encounterNameTextView = (TextView) view.findViewById(R.id.list_item_encounter_name);
+        encounterCheckBoxView = (CheckBox) view.findViewById(R.id.list_item_encounter_checkbox);
 
-        //view.setLongClickable(true);
         view.setOnClickListener(this);
-        view.setOnLongClickListener(this);
+        encounterCheckBoxView.setOnClickListener(this);
     }
 
     public void setData(Cursor c) {
         encounterNameTextView.setText(c.getString(c.getColumnIndex(CombatTrackerContract.EncounterEntry.NAME)));
+    }
+
+    public void setSelected(boolean isSelected) {
+        encounterCheckBoxView.setChecked(isSelected);
     }
 
     @Override
@@ -34,14 +38,5 @@ public class EncounterViewHolder extends CustomViewHolder implements View.OnClic
         if (listener != null) {
             listener.onItemClick(view, getAdapterPosition());
         }
-    }
-
-    @Override
-    public boolean onLongClick(View view) {
-        if (longListener != null) {
-            longListener.onLongItemClick(view, getAdapterPosition());
-        }
-
-        return true;
     }
 }

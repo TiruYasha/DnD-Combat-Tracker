@@ -35,10 +35,6 @@ public class EncounterProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, BASE_PATH + "/#", ENCOUNTER_ID);
     }
 
-    public static Uri urlForItems(int limit) {
-        return Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH + "/offset/" + limit);
-    }
-
     @Override
     public boolean onCreate() {
         dbHelper = new CombatTrackerDbHelper(
@@ -99,8 +95,21 @@ public class EncounterProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(@NonNull Uri uri, @Nullable String s, @Nullable String[] strings) {
-        return 0;
+    public int delete(@NonNull Uri uri, @Nullable String where, @Nullable String[] args) {
+        int uriType = sUriMatcher.match(uri);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int numberOfRows;
+
+        switch (uriType) {
+            case ENCOUNTERS:
+                numberOfRows = db.delete(CombatTrackerContract.EncounterEntry.TABLE_NAME, where, args);
+                break;
+            default:
+                throw new IllegalArgumentException("Unkown URI: " + uri);
+        }
+
+        getContext().getContentResolver().notifyChange(uri, null);
+        return numberOfRows;
     }
 
     @Override

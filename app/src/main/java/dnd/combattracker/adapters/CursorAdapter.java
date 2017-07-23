@@ -4,14 +4,14 @@ package dnd.combattracker.adapters;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 
-public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
+public abstract class CursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
     private Cursor cursor;
 
     private int rowIdColumn;
     private boolean dataValid;
 
-    public CursorRecyclerViewAdapter(Cursor cursor) {
+    public CursorAdapter(Cursor cursor) {
         this.cursor = cursor;
         dataValid = cursor != null;
         rowIdColumn = dataValid ? this.cursor.getColumnIndex("_id") : -1;
