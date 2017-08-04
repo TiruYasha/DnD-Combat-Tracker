@@ -132,6 +132,9 @@ public class EncounterProvider extends ContentProvider {
         int success;
 
         switch (uriType) {
+            case ENCOUNTER:
+                success = db.update(EncounterEntry.TABLE_NAME, contentValues, where, whereArgs);
+                break;
             case ENCOUNTER_DRAFT:
                 success = db.update(EncounterDraftEntry.TABLE_NAME, contentValues, where, whereArgs);
                 break;

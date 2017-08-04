@@ -2,6 +2,7 @@ package dnd.combattracker;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
@@ -12,7 +13,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import dnd.combattracker.controllers.EncounterController;
+import dnd.combattracker.repository.CombatTrackerContract;
 import dnd.combattracker.repository.EncounterProvider;
+
+import static dnd.combattracker.repository.CombatTrackerContract.*;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -24,6 +29,7 @@ import dnd.combattracker.repository.EncounterProvider;
  */
 public class EncounterDetailFragment extends Fragment {
 
+    private EncounterController encounterController;
     private long encounterDraftId;
     private OnFragmentInteractionListener mListener;
     private TextInputEditText encounterName;
@@ -36,8 +42,8 @@ public class EncounterDetailFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment EncounterDetailFragment.
      * @param encounterDraftId
+     * @return A new instance of fragment EncounterDetailFragment.
      */
     public static EncounterDetailFragment newInstance(long encounterDraftId) {
         EncounterDetailFragment fragment = new EncounterDetailFragment();
@@ -49,8 +55,10 @@ public class EncounterDetailFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        encounterController = new EncounterController(getActivity().getContentResolver());
+
         Bundle b = getArguments();
-        if(b != null){
+        if (b != null) {
             encounterDraftId = b.getLong("encounterDraftId");
         }
 
@@ -62,9 +70,15 @@ public class EncounterDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_encounter_detail, container, false);
 
+        Cursor cursor = encounterController.getEncounterDraftFromId(encounterDraftId);
+
         encounterName = (TextInputEditText) view.findViewById(R.id.input_encounter_name);
         encounterName.addTextChangedListener(new HandleTextChange());
-        // Inflate the layout for this fragment
+
+        while (cursor.moveToNext()) {
+            encounterName.append(cursor.getString(cursor.getColumnIndex(EncounterDraftEntry.NAME)));
+        }
+
         return view;
     }
 
@@ -92,10 +106,6 @@ public class EncounterDetailFragment extends Fragment {
         mListener = null;
     }
 
-    private void createNewDraftIfNotExists() {
-
-    }
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -111,7 +121,7 @@ public class EncounterDetailFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    private class HandleTextChange implements TextWatcher{
+    private class HandleTextChange implements TextWatcher {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -126,9 +136,7 @@ public class EncounterDetailFragment extends Fragment {
             ContentValues values = new ContentValues();
             values.put("name", encounterName.getText().toString());
 
-            String selectionClause = "_id = ?";
-            String[] selectionArgs = {String.valueOf(encounterDraftId)};
-            getActivity().getContentResolver().update(EncounterProvider.CONTENT_URI_DRAFT, values, selectionClause, selectionArgs);
+            encounterController.updateEncounterDraftById(encounterDraftId, values);
         }
     }
 }

@@ -23,12 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dnd.combattracker.adapters.EncounterSelectableAdapter;
+import dnd.combattracker.controllers.EncounterController;
 import dnd.combattracker.listeners.OnItemClickListener;
 import dnd.combattracker.repository.CombatTrackerContract;
 import dnd.combattracker.repository.EncounterProvider;
 
 public class EncounterSelectableListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnItemClickListener{
 
+    private EncounterController encounterController;
     private RecyclerView recyclerView;
     private EncounterSelectableAdapter adapter;
     private LinearLayoutManager layoutManager;
@@ -42,6 +44,8 @@ public class EncounterSelectableListFragment extends Fragment implements LoaderM
         view.setTag("RecyclerViewFragment");
 
         setHasOptionsMenu(true);
+
+        encounterController = new EncounterController(getActivity().getContentResolver());
 
         initializeRecyclerView(view);
 
@@ -95,33 +99,31 @@ public class EncounterSelectableListFragment extends Fragment implements LoaderM
     }
 
     private void deleteEncounters() {
-        Cursor cursor = adapter.getCursor();
-        cursor.moveToPosition(-1);
-        List<Integer> positions = adapter.getSelectedItems();
-
-        if(positions.size() < 1){
+        if(adapter.getSelectedItems().size() < 1){
             Toast.makeText(getActivity(), "Nothing selected", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        List<Integer> positions = adapter.getSelectedItems();
         List<String> encounterIds = new ArrayList<>();
+
+        getEncountersToBeDeleted(positions, encounterIds);
+
+        encounterController.deleteEncounters(encounterIds);
+
+        adapter.clearSelection();
+        refreshTitle();
+    }
+
+    private void getEncountersToBeDeleted(List<Integer> positions, List<String> encounterIds) {
+        Cursor cursor = adapter.getCursor();
+        cursor.moveToPosition(-1);
 
         while(cursor.moveToNext()){
             if(positions.contains(cursor.getPosition())){
                 encounterIds.add("" + cursor.getInt(cursor.getColumnIndex(CombatTrackerContract.EncounterEntry._ID)));
             }
         }
-
-        String questionMarks = "";
-
-        for(String id : encounterIds){
-            questionMarks += "?, ";
-        }
-        questionMarks = questionMarks.substring(0, questionMarks.length() - 2);
-
-        getActivity().getContentResolver().delete(EncounterProvider.CONTENT_URI, CombatTrackerContract.EncounterEntry._ID + " IN ("+ questionMarks + ")", encounterIds.toArray(new String[0]));
-        adapter.clearSelection();
-        refreshTitle();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package dnd.combattracker;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -55,7 +56,7 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
     @Override
     public void onResume() {
         super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Encounters");
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Encounters");
     }
 
     //region CursorLoader
@@ -77,8 +78,14 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public void onItemClick(View itemView, int position) {
+        Intent intent = new Intent(getActivity(), ManageEncounterActivity.class);
+        Bundle b = new Bundle();
 
+        b.putLong("encounterId", adapter.getItemId(position));
+        intent.putExtras(b);
+        startActivity(intent);
     }
+
 
     @Override
     public void onLongItemClick(View itemView, int position) {
@@ -89,7 +96,6 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
 
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
 
         fragmentTransaction.addToBackStack("selector");
         fragmentTransaction.replace(R.id.frame_layout_main, fragment);

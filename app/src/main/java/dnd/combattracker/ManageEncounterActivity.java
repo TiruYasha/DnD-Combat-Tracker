@@ -1,50 +1,65 @@
 package dnd.combattracker;
 
 import android.content.ContentValues;
-import android.database.Cursor;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
-import dnd.combattracker.repository.EncounterProvider;
-
-import static dnd.combattracker.repository.CombatTrackerContract.EncounterEntry;
-
+import dnd.combattracker.controllers.EncounterController;
+import dnd.combattracker.repository.CombatTrackerContract;
 
 public class ManageEncounterActivity extends AppCompatActivity implements EncounterDetailFragment.OnFragmentInteractionListener {
 
+    private EncounterController encounterController;
     private long encounterId = -1;
     private long encounterDraftId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        encounterController = new EncounterController(getContentResolver());
+
         setContentView(R.layout.activity_manage_encounter);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (savedInstanceState != null && savedInstanceState.getInt("encounterId") != -1) {
-            encounterId = savedInstanceState.getInt("encounterId");
+        Bundle b = getIntent().getExtras();
+        if (b != null && b.getLong("encounterId") != -1) {
+            encounterId = b.getLong("encounterId");
         }
 
-        createDraft(savedInstanceState);
-
-        loadEncounterDetailFragment();
+        createDraft();
     }
 
-    private void createDraft(Bundle savedInstanceState) {
+    private void createDraft() {
         if (encounterId == -1) {
-            ContentValues values = new ContentValues();
-            values.put(EncounterEntry.NAME, "");
 
-            Uri result = getContentResolver().insert(EncounterProvider.CONTENT_URI_DRAFT, values);
-            encounterDraftId = Long.parseLong(result.getLastPathSegment());
+            long draftId = encounterController.getDraftIdWithoutEncounterId();
+
+            if (draftId > -1) {
+                showDraftDialog(new DialogNonExistingEncounterClickListener());
+                return;
+            }
+            return;
         }
+
+        final long draftId = encounterController.getDraftIdByEncounterId(encounterId);
+
+        if (draftId != -1) {
+            showDraftDialog(new DialogExistingEncounterClickListener());
+        } else {
+            encounterDraftId = encounterController.insertDraftFromEncounter(encounterId);
+            loadEncounterDetailFragment();
+        }
+
     }
 
     @Override
@@ -67,39 +82,13 @@ public class ManageEncounterActivity extends AppCompatActivity implements Encoun
     }
 
     private void saveEncounter() {
-
-        if(encounterId != -1){
-            updateEncounterToDraft();
-        }else{
-            insertEncounterFromDraft();
+        if (encounterId != -1) {
+            encounterController.updateEncounterFromDraft(encounterId, encounterDraftId);//updateEncounterToDraft();
+        } else {
+            encounterController.insertEncounterFromDraft(encounterDraftId);
         }
-//        ContentValues values = new ContentValues();
-//        values.put(EncounterEntry.NAME, encounterName.getText().toString());
-//
-//        getContentResolver().insert(EncounterProvider.CONTENT_URI, values);
 
         finish();
-    }
-
-    private void insertEncounterFromDraft() {
-        String[] projection = {"name"};
-        String selection = "_id = ?";
-        String[] selectionArgs = {String.valueOf(encounterDraftId)};
-
-        Cursor cursor = getContentResolver().query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, null);
-
-        ContentValues data = new ContentValues();
-
-        while(cursor.moveToNext()){
-            data.put("name", cursor.getString(cursor.getColumnIndex("name")));
-        }
-
-        getContentResolver().insert(EncounterProvider.CONTENT_URI, data);
-    }
-
-    private void updateEncounterToDraft() {
-
-
     }
 
     private void loadEncounterDetailFragment() {
@@ -116,5 +105,49 @@ public class ManageEncounterActivity extends AppCompatActivity implements Encoun
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    private void showDraftDialog(DialogInterface.OnClickListener clickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Draft");
+        builder.setMessage("Want to use the last draft?");
+        builder.setPositiveButton("Yes", clickListener);
+        builder.setNegativeButton("No", clickListener);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private class DialogExistingEncounterClickListener implements DialogInterface.OnClickListener{
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            if(which == -2){
+                encounterDraftId = encounterController.insertDraftFromEncounter(encounterId);
+                loadEncounterDetailFragment();
+                dialog.dismiss();
+            }else{
+                encounterDraftId = encounterController.getDraftIdByEncounterId(encounterId);
+                loadEncounterDetailFragment();
+                dialog.dismiss();
+            }
+        }
+    }
+
+    private class DialogNonExistingEncounterClickListener implements DialogInterface.OnClickListener{
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            //TODO Delete old drafts
+            if(which == -2){
+                ContentValues values = new ContentValues();
+                values.put(CombatTrackerContract.EncounterEntry.NAME, "");
+
+                encounterDraftId = encounterController.insertEncounterDraft(values);
+                loadEncounterDetailFragment();
+            }else{
+                encounterDraftId = encounterController.getDraftIdWithoutEncounterId();
+                loadEncounterDetailFragment();
+            }
+        }
     }
 }

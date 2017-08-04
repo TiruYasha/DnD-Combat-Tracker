@@ -8,7 +8,7 @@
     <string name="title_activity_add_encounter">Manage Encounter</string>
     <string name="save_encounter">Save Encounter</string>
     <string name="title_activity_test">TestActivity</string>
-    <string name="encounter_name">Encounter name</string>
+    <string name="encounter_name">Encounter name *</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
