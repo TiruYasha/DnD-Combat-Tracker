@@ -5,8 +5,11 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
-    <string name="title_activity_add_encounter">AddEncounterActivity</string>
+    <string name="title_activity_add_encounter">Manage Encounter</string>
     <string name="save_encounter">Save Encounter</string>
     <string name="title_activity_test">TestActivity</string>
     <string name="encounter_name">Encounter name</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

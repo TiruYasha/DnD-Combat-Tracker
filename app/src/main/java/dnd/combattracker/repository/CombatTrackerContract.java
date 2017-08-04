@@ -13,6 +13,12 @@ public final class CombatTrackerContract {
         public static final String NAME = "name";
     }
 
+    public static class EncounterDraftEntry implements BaseColumns {
+        public static final String TABLE_NAME = "EncounterDraft";
+        public static final String NAME = "name";
+        public static final String ENCOUNTER_ID = "encounterId";
+    }
+
     public static class CreatureEntry implements BaseColumns {
         public static final String TABLE_NAME = "Creature";
         public static final String NAME = "name";
@@ -32,6 +38,12 @@ public final class CombatTrackerContract {
 
     public static class EncounterCreatureEntry implements BaseColumns{
         public static final String TABLE_NAME = "EncounterCreature";
+        public static final String CREATURE_ID = "creatureId";
+        public static final String ENCOUNTER_ID = "encounterId";
+    }
+
+    public static class EncounterCreatureDraftEntry implements BaseColumns{
+        public static final String TABLE_NAME = "EncounterCreatureDraft";
         public static final String CREATURE_ID = "creatureId";
         public static final String ENCOUNTER_ID = "encounterId";
     }

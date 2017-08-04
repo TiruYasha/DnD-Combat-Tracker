@@ -7,7 +7,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import dnd.combattracker.R;
-import dnd.combattracker.listeners.OnLongItemClickListener;
 import dnd.combattracker.repository.CombatTrackerContract;
 
 public class EncounterSelectableViewHolder extends CustomViewHolder implements View.OnClickListener {

@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AddEncounterActivity"
+            android:name=".ManageEncounterActivity"
             android:label= "@string/title_activity_add_encounter"
             android:theme="@style/AppTheme.NoActionBar" />
         <provider

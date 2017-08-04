@@ -2,9 +2,6 @@ package dnd.combattracker.adapters.viewholders;
 
 
 import android.database.Cursor;
-import android.support.v7.widget.RecyclerView;
-import android.view.ContextMenu;
-import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
 

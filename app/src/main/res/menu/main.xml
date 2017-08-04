@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_add_encounter"
-        android:icon="@drawable/ic_menu_send"
+        android:icon="@drawable/ic_menu_playlist_add"
         android:title="Add encounter"
         app:showAsAction="always" />
 </menu>
