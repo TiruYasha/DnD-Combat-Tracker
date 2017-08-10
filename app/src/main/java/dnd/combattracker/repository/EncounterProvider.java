@@ -1,7 +1,6 @@
 package dnd.combattracker.repository;
 
 import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -20,8 +19,6 @@ public class EncounterProvider extends ContentProvider {
 
     private static final int ENCOUNTER = 10;
     private static final int ENCOUNTER_DRAFT = 11;
-    private static final int ENCOUNTER_ID = 20;
-    private static final int ENCOUNTER_DRAFT_ID = 21;
 
     private static final String AUTHORITY = "dnd.combattracker.repository.EncounterProvider";
 
@@ -29,17 +26,12 @@ public class EncounterProvider extends ContentProvider {
 
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
     public static final Uri CONTENT_URI_DRAFT = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH  + "/draft");
-    public static final Uri CONTENT_URI_DRAFT_ID = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH  + "/draft/#");
-    public static final String CONENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/encounters";
-    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/encounters";
 
-    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
-        sUriMatcher.addURI(AUTHORITY, BASE_PATH, ENCOUNTER);
-        sUriMatcher.addURI(AUTHORITY, BASE_PATH + "/draft", ENCOUNTER_DRAFT);
-        sUriMatcher.addURI(AUTHORITY, BASE_PATH + "/#", ENCOUNTER_ID);
-        sUriMatcher.addURI(AUTHORITY, BASE_PATH + "/draft/#", ENCOUNTER_DRAFT_ID);
+        URI_MATCHER.addURI(AUTHORITY, BASE_PATH, ENCOUNTER);
+        URI_MATCHER.addURI(AUTHORITY, BASE_PATH + "/draft", ENCOUNTER_DRAFT);
     }
 
     @Override
@@ -56,13 +48,9 @@ public class EncounterProvider extends ContentProvider {
     synchronized public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-        switch (sUriMatcher.match(uri)) {
+        switch (URI_MATCHER.match(uri)) {
             case ENCOUNTER:
                 queryBuilder.setTables(EncounterEntry.TABLE_NAME);
-                break;
-            case ENCOUNTER_ID:
-                queryBuilder.setTables(EncounterEntry.TABLE_NAME);
-                queryBuilder.appendWhere(EncounterEntry._ID + "=" + uri.getLastPathSegment());
                 break;
             case ENCOUNTER_DRAFT:
                 queryBuilder.setTables(EncounterDraftEntry.TABLE_NAME);
@@ -88,7 +76,7 @@ public class EncounterProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
-        int uriType = sUriMatcher.match(uri);
+        int uriType = URI_MATCHER.match(uri);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         long id;
 
@@ -109,7 +97,7 @@ public class EncounterProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String where, @Nullable String[] args) {
-        int uriType = sUriMatcher.match(uri);
+        int uriType = URI_MATCHER.match(uri);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int numberOfRows;
 
@@ -127,7 +115,7 @@ public class EncounterProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String where, @Nullable String[] whereArgs) {
-        int uriType = sUriMatcher.match(uri);
+        int uriType = URI_MATCHER.match(uri);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int success;
 

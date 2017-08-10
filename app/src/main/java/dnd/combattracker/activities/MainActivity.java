@@ -1,4 +1,4 @@
-package dnd.combattracker;
+package dnd.combattracker.activities;
 
 
 import android.content.Intent;
@@ -12,6 +12,9 @@ import android.support.v7.widget.Toolbar;
 import android.support.design.widget.NavigationView;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import dnd.combattracker.R;
+import dnd.combattracker.activities.manageencounter.ManageEncounterActivity;
 
 
 public class MainActivity extends AppCompatActivity

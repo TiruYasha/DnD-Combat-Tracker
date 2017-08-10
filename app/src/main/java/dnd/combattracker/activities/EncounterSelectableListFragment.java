@@ -1,4 +1,4 @@
-package dnd.combattracker;
+package dnd.combattracker.activities;
 
 
 import android.database.Cursor;
@@ -22,6 +22,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import dnd.combattracker.R;
 import dnd.combattracker.adapters.EncounterSelectableAdapter;
 import dnd.combattracker.controllers.EncounterController;
 import dnd.combattracker.listeners.OnItemClickListener;

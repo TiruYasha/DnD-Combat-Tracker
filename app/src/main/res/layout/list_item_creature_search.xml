@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="8dp">
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/button_add_creature"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerVertical="true"
+        android:background="@drawable/roundedbutton"
+        android:text="+" />
+
+    <TextView
+        android:id="@+id/list_item_creature_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:fontFamily="sans-serif"
+        android:paddingLeft="56dp"
+        android:text="TextView"
+        android:textSize="16sp" />
+
+</RelativeLayout>

@@ -1,38 +1,50 @@
-package dnd.combattracker;
+package dnd.combattracker.activities.manageencounter;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import dnd.combattracker.R;
+import dnd.combattracker.adapters.EncounterCreatureAdapter;
 import dnd.combattracker.controllers.EncounterController;
-import dnd.combattracker.repository.CombatTrackerContract;
-import dnd.combattracker.repository.EncounterProvider;
+import dnd.combattracker.models.Creature;
+import dnd.combattracker.repository.EncounterCreatureProvider;
 
 import static dnd.combattracker.repository.CombatTrackerContract.*;
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link EncounterDetailFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link EncounterDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class EncounterDetailFragment extends Fragment {
+public class EncounterDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private EncounterController encounterController;
     private long encounterDraftId;
-    private OnFragmentInteractionListener mListener;
+
     private TextInputEditText encounterName;
+
+    private RecyclerView recyclerView;
+    private EncounterCreatureAdapter adapter;
+    private LinearLayoutManager layoutManager;
+
 
     public EncounterDetailFragment() {
         // Required empty public constructor
@@ -47,9 +59,11 @@ public class EncounterDetailFragment extends Fragment {
      */
     public static EncounterDetailFragment newInstance(long encounterDraftId) {
         EncounterDetailFragment fragment = new EncounterDetailFragment();
+
         Bundle args = new Bundle();
         args.putLong("encounterDraftId", encounterDraftId);
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -79,46 +93,40 @@ public class EncounterDetailFragment extends Fragment {
             encounterName.append(cursor.getString(cursor.getColumnIndex(EncounterDraftEntry.NAME)));
         }
 
+        recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
+
+        layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+
+        adapter = new EncounterCreatureAdapter(null);
+        recyclerView.setAdapter(adapter);
+
         return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getActivity().getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {CreatureEntry.TABLE_NAME + "." + CreatureEntry._ID, CreatureEntry.NAME};
+        String selection = EncounterCreatureDraftEntry.ENCOUNTER_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(encounterDraftId)};
+
+        return new CursorLoader(getActivity(), EncounterCreatureProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, null);
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        adapter.swapCursor(data);
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 
     private class HandleTextChange implements TextWatcher {

@@ -9,10 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"
-            >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -20,13 +19,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ManageEncounterActivity"
-            android:label= "@string/title_activity_add_encounter"
+            android:name=".activities.manageencounter.ManageEncounterActivity"
+            android:label="@string/title_activity_manage_encounter"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <provider
-            android:name="dnd.combattracker.repository.EncounterProvider"
+            android:name=".repository.EncounterProvider"
             android:authorities="dnd.combattracker.repository.EncounterProvider"
-            android:exported="false"/>
+            android:exported="false" />
+        <provider
+            android:name=".repository.CreatureProvider"
+            android:authorities="dnd.combattracker.repository.CreatureProvider"
+            android:exported="false" />
+        <provider
+            android:name=".repository.EncounterCreatureProvider"
+            android:authorities="dnd.combattracker.repository.EncounterCreatureProvider"
+            android:exported="false" />
     </application>
 
 </manifest>

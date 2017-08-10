@@ -1,4 +1,4 @@
-package dnd.combattracker;
+package dnd.combattracker.activities;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -17,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import dnd.combattracker.R;
+import dnd.combattracker.activities.manageencounter.ManageEncounterActivity;
 import dnd.combattracker.adapters.EncounterAdapter;
 import dnd.combattracker.listeners.OnItemClickListener;
 import dnd.combattracker.listeners.OnLongItemClickListener;

@@ -7,7 +7,7 @@ import android.net.Uri;
 
 import java.util.List;
 
-import dnd.combattracker.repository.CombatTrackerContract;
+import dnd.combattracker.repository.EncounterCreatureProvider;
 import dnd.combattracker.repository.EncounterProvider;
 
 import static dnd.combattracker.repository.CombatTrackerContract.*;
@@ -47,7 +47,38 @@ public class EncounterController {
 
         cursor.close();
 
-        return getIdFromUri(contentResolver.insert(EncounterProvider.CONTENT_URI, data));
+        long encounterId = getIdFromUri(contentResolver.insert(EncounterProvider.CONTENT_URI, data));
+
+        insertCreaturesFromDraft(encounterId, draftId);
+
+        return encounterId;
+    }
+
+    private void insertCreaturesFromDraft(long encounterId, long encounterDraftId) {
+        String selection = EncounterCreatureDraftEntry.ENCOUNTER_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(encounterDraftId)};
+
+        Cursor cursor = contentResolver.query(EncounterCreatureProvider.CONTENT_URI_DRAFT, null, selection, selectionArgs, null);
+
+        ContentValues[] values = new ContentValues[cursor.getCount()];
+
+        int i = 0;
+        while(cursor.moveToNext()){
+            ContentValues data = new ContentValues();
+            data.put(EncounterCreatureEntry.CREATURE_ID, cursor.getLong(cursor.getColumnIndex(EncounterCreatureDraftEntry.CREATURE_ID)));
+            data.put(EncounterCreatureEntry.ENCOUNTER_ID, encounterId);
+
+            values[i] = data;
+            i++;
+        }
+
+        String selectionOfficial = EncounterCreatureEntry.ENCOUNTER_ID + " = ?";
+        String[] selectionArgsOfficial = {String.valueOf(encounterId)};
+
+        contentResolver.delete(EncounterCreatureProvider.CONTENT_URI, selectionOfficial, selectionArgsOfficial);
+        contentResolver.bulkInsert(EncounterCreatureProvider.CONTENT_URI, values);
+        contentResolver.delete(EncounterCreatureProvider.CONTENT_URI_DRAFT, selection, selectionArgs);
+
     }
 
     /**
@@ -72,7 +103,32 @@ public class EncounterController {
 
         cursor.close();
 
-        return getIdFromUri(contentResolver.insert(EncounterProvider.CONTENT_URI_DRAFT, data));
+        long newEncounterId = getIdFromUri(contentResolver.insert(EncounterProvider.CONTENT_URI_DRAFT, data));
+
+        insertDraftCreaturesFromEncounter(encounterId, newEncounterId);
+
+        return newEncounterId;
+    }
+
+    private void insertDraftCreaturesFromEncounter(long encounterId, long draftEncounterId) {
+        String[] projection = {EncounterCreatureDraftEntry.CREATURE_ID};
+        String selection = EncounterCreatureDraftEntry.ENCOUNTER_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(encounterId)};
+
+        Cursor cursor = contentResolver.query(EncounterCreatureProvider.CONTENT_URI, projection, selection, selectionArgs, null);
+
+        ContentValues[] data = new ContentValues[cursor.getCount()];
+
+        int i = 0;
+        while (cursor.moveToNext()) {
+            ContentValues values = new ContentValues();
+            values.put(EncounterCreatureDraftEntry.CREATURE_ID, cursor.getLong(cursor.getColumnIndex(EncounterCreatureDraftEntry.CREATURE_ID)));
+            values.put(EncounterCreatureDraftEntry.ENCOUNTER_ID, draftEncounterId);
+            data[i] = values;
+            i++;
+        }
+
+        contentResolver.bulkInsert(EncounterCreatureProvider.CONTENT_URI_DRAFT, data);
     }
 
     /**
@@ -138,12 +194,9 @@ public class EncounterController {
 
         cursor.close();
 
+        insertCreaturesFromDraft(encounterId, encounterDraftId);
+
         return contentResolver.update(EncounterProvider.CONTENT_URI, values, selectionClause, selectionArgs) != -1;
-
-    }
-
-    private long getIdFromUri(Uri result) {
-        return Long.parseLong(result.getLastPathSegment());
     }
 
     public long getDraftIdByEncounterId(long encounterId) {
@@ -175,5 +228,17 @@ public class EncounterController {
         }
 
         return draftId;
+    }
+
+    public long addCreatureToEncounterDraft(long encounterId, long creatureId) {
+        ContentValues values = new ContentValues();
+        values.put(EncounterCreatureDraftEntry.ENCOUNTER_ID, encounterId);
+        values.put(EncounterCreatureDraftEntry.CREATURE_ID, creatureId);
+
+        return getIdFromUri(contentResolver.insert(EncounterCreatureProvider.CONTENT_URI_DRAFT, values));
+    }
+
+    private long getIdFromUri(Uri result) {
+        return Long.parseLong(result.getLastPathSegment());
     }
 }
