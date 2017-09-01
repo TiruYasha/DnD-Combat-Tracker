@@ -13,7 +13,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import dnd.combattracker.R;
 import dnd.combattracker.adapters.CreatureSearchAdapter;
@@ -102,7 +101,7 @@ public class CreatureSearchFragment extends Fragment implements LoaderManager.Lo
         adapter.getCursor().moveToPosition(position);
 
         String creatureName = adapter.getCursor().getString(adapter.getCursor().getColumnIndex(CombatTrackerContract.CreatureEntry.NAME));
-        listener.onAddEncounter(adapter.getItemId(position), creatureName);
+        listener.onAddCreature(adapter.getItemId(position), creatureName);
     }
 
     @Override
@@ -123,6 +122,6 @@ public class CreatureSearchFragment extends Fragment implements LoaderManager.Lo
     }
 
     public interface CreatureSearchFragmentListener {
-        void onAddEncounter(long creatureId, String creatureName);
+        void onAddCreature(long creatureId, String creatureName);
     }
 }

@@ -3,11 +3,13 @@ package dnd.combattracker.adapters;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.view.ViewGroup;
 
 import dnd.combattracker.activities.manageencounter.CreatureSearchFragment;
 import dnd.combattracker.activities.manageencounter.EncounterDetailFragment;
 
-public class ManageEncounterPagerAdapter extends FragmentPagerAdapter {
+public class ManageEncounterPagerAdapter extends FragmentStatePagerAdapter {
 
     private long encounterDraftId = -1;
 
@@ -45,5 +47,15 @@ public class ManageEncounterPagerAdapter extends FragmentPagerAdapter {
             default:
                 return null;
         }
+    }
+
+    @Override
+    public int getItemPosition(Object object) {
+        return POSITION_NONE;
+    }
+
+    public void changeEncounterDraftId(long encounterDraftId){
+        this.encounterDraftId = encounterDraftId;
+        notifyDataSetChanged();
     }
 }

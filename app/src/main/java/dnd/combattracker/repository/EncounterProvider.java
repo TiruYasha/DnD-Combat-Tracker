@@ -105,6 +105,9 @@ public class EncounterProvider extends ContentProvider {
             case ENCOUNTER:
                 numberOfRows = db.delete(EncounterEntry.TABLE_NAME, where, args);
                 break;
+            case ENCOUNTER_DRAFT:
+                numberOfRows = db.delete(EncounterDraftEntry.TABLE_NAME, where, args);
+                break;
             default:
                 throw new IllegalArgumentException("Unkown URI: " + uri);
         }

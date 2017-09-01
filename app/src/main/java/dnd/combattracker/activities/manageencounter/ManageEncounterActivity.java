@@ -2,7 +2,6 @@ package dnd.combattracker.activities.manageencounter;
 
 
 import android.content.ContentValues;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,12 +16,14 @@ import android.view.View;
 import dnd.combattracker.R;
 import dnd.combattracker.adapters.ManageEncounterPagerAdapter;
 import dnd.combattracker.controllers.EncounterController;
+import dnd.combattracker.controllers.EncounterDraftController;
 import dnd.combattracker.repository.CombatTrackerContract;
 
-public class ManageEncounterActivity extends AppCompatActivity implements CreatureSearchFragment.CreatureSearchFragmentListener{
+public class ManageEncounterActivity extends AppCompatActivity implements CreatureSearchFragment.CreatureSearchFragmentListener {
 
     private ManageEncounterPagerAdapter manageEncounterPagerAdapter;
     private EncounterController encounterController;
+    private EncounterDraftController encounterDraftController;
     private long encounterId = -1;
     private long encounterDraftId = -1;
 
@@ -37,6 +38,7 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
         setContentView(R.layout.activity_manage_encounter);
 
         encounterController = new EncounterController(getContentResolver());
+        encounterDraftController = new EncounterDraftController(getContentResolver());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -47,7 +49,8 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
             encounterId = b.getLong("encounterId");
         }
 
-        createDraft();
+        //createDraft();
+        setupDraft();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -59,33 +62,70 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
         });
     }
 
-    private void createDraft() {
-        if (encounterId == -1) {
-
-            long draftId = encounterController.getDraftIdWithoutEncounterId();
-
-            if (draftId > -1) {
-                ContentValues values = new ContentValues();
-                values.put(CombatTrackerContract.EncounterEntry.NAME, "");
-
-                encounterDraftId = encounterController.insertEncounterDraft(values);
-                setupPager();
-                //showDraftDialog(new DialogNonExistingEncounterClickListener());
-                return;
-            }
-            return;
-        }
-
-        final long draftId = encounterController.getDraftIdByEncounterId(encounterId);
-
-        if (draftId != -1) {
-            encounterDraftId = encounterController.insertDraftFromEncounter(encounterId);
-            setupPager();
-            //showDraftDialog(new DialogExistingEncounterClickListener());
+    private void setupDraft() {
+        if (encounterExists()) {
+            setupExistingEncounterDraft();
         } else {
-            encounterDraftId = encounterController.insertDraftFromEncounter(encounterId);
-            setupPager();
+            setupNewEncounterDraft();
         }
+    }
+
+    private void setupExistingEncounterDraft() {
+        int draftCount = encounterDraftController.getDraftCountById(encounterId);
+
+        switch (draftCount) {
+            case 0:
+                encounterDraftId = encounterDraftController.insertDraftFromEncounter(encounterId);
+                break;
+            case 1:
+                encounterDraftId = encounterDraftController.insertDraftFromEncounter(encounterId);
+                showRestoreDraftSnackbar();
+                break;
+            default:
+                encounterDraftId = encounterDraftController.insertDraftFromEncounter(encounterId);
+                encounterDraftController.deleteOldestDraftForEncounterId(encounterId);
+                showRestoreDraftSnackbar();
+                break;
+        }
+
+        setupPager();
+    }
+
+    private void setupNewEncounterDraft() {
+        int draftCount = encounterDraftController.getDraftCount();
+
+        switch (draftCount) {
+            case 0:
+                encounterDraftId = encounterDraftController.insertEmptyEncounterDraft();
+                break;
+            case 1:
+                encounterDraftId = encounterDraftController.insertEmptyEncounterDraft();
+                showRestoreDraftSnackbar();
+                break;
+            default:
+                encounterDraftId = encounterDraftController.insertEmptyEncounterDraft();
+                encounterDraftController.deleteOldestDraft();
+                showRestoreDraftSnackbar();
+                break;
+        }
+
+        setupPager();
+    }
+
+    private void showRestoreDraftSnackbar() {
+        Snackbar.make(findViewById(R.id.manage_layout), "Restore previous data", Snackbar.LENGTH_LONG)
+                .setAction("Restore", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        encounterDraftController.deleteDraftById(encounterDraftId);
+                        if (encounterExists()) {
+                            encounterDraftId = encounterDraftController.getOldestDraftIdByEncounterId(encounterId);
+                        } else {
+                            encounterDraftId = encounterDraftController.getOldestDraftId();
+                        }
+                        manageEncounterPagerAdapter.changeEncounterDraftId(encounterDraftId);
+                    }
+                }).show();
     }
 
     private void setupPager() {
@@ -130,10 +170,14 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
     }
 
     @Override
-    public void onAddEncounter(long creatureId, String creatureName) {
+    public void onAddCreature(long creatureId, String creatureName) {
         encounterController.addCreatureToEncounterDraft(encounterDraftId, creatureId);
 
         Snackbar.make(findViewById(R.id.manage_layout), "Added " + creatureName + " successfully", Snackbar.LENGTH_SHORT)
                 .setAction("Action", null).show();
+    }
+
+    private boolean encounterExists() {
+        return encounterId != -1;
     }
 }

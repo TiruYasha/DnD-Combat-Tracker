@@ -36,6 +36,7 @@ import static dnd.combattracker.repository.CombatTrackerContract.*;
  */
 public class EncounterDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private Cursor cursor;
     private EncounterController encounterController;
     private long encounterDraftId;
 
@@ -44,7 +45,6 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
     private RecyclerView recyclerView;
     private EncounterCreatureAdapter adapter;
     private LinearLayoutManager layoutManager;
-
 
     public EncounterDetailFragment() {
         // Required empty public constructor
@@ -84,22 +84,18 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_encounter_detail, container, false);
 
-        Cursor cursor = encounterController.getEncounterDraftFromId(encounterDraftId);
+        cursor = encounterController.getEncounterDraftFromId(encounterDraftId);
 
         encounterName = (TextInputEditText) view.findViewById(R.id.input_encounter_name);
         encounterName.addTextChangedListener(new HandleTextChange());
 
-        while (cursor.moveToNext()) {
-            encounterName.append(cursor.getString(cursor.getColumnIndex(EncounterDraftEntry.NAME)));
-        }
-
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
         adapter = new EncounterCreatureAdapter(null);
         recyclerView.setAdapter(adapter);
+        getActivity().getSupportLoaderManager().restartLoader(0, null, this);
 
         return view;
     }
@@ -107,7 +103,17 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        getActivity().getSupportLoaderManager().initLoader(0, null, this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        while (cursor.moveToNext()) {
+            encounterName.setText(cursor.getString(cursor.getColumnIndex(EncounterDraftEntry.NAME)));
+        }
+
+        cursor.close();
     }
 
     @Override
@@ -126,13 +132,12 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        String test = "0";
     }
 
     private class HandleTextChange implements TextWatcher {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
         }
 
         @Override
@@ -142,6 +147,7 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
         @Override
         public void afterTextChanged(Editable s) {
             ContentValues values = new ContentValues();
+
             values.put("name", encounterName.getText().toString());
 
             encounterController.updateEncounterDraftById(encounterDraftId, values);
