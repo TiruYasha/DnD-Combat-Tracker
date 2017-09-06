@@ -2,6 +2,7 @@ package dnd.combattracker.activities.manageencounter;
 
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,20 +17,22 @@ import android.view.View;
 import dnd.combattracker.R;
 import dnd.combattracker.adapters.ManageEncounterPagerAdapter;
 import dnd.combattracker.controllers.EncounterController;
+import dnd.combattracker.controllers.EncounterCreatureController;
+import dnd.combattracker.controllers.EncounterCreatureDraftController;
 import dnd.combattracker.controllers.EncounterDraftController;
-import dnd.combattracker.repository.CombatTrackerContract;
 
-public class ManageEncounterActivity extends AppCompatActivity implements CreatureSearchFragment.CreatureSearchFragmentListener {
+public class ManageEncounterActivity extends AppCompatActivity implements CreatureSearchFragment.CreatureSearchFragmentListener, EncounterDetailFragment.EncounterDetailFragmentListener {
 
     private ManageEncounterPagerAdapter manageEncounterPagerAdapter;
+
     private EncounterController encounterController;
     private EncounterDraftController encounterDraftController;
+    private EncounterCreatureController encounterCreatureController;
+    private EncounterCreatureDraftController encounterCreatureDraftController;
+
     private long encounterId = -1;
     private long encounterDraftId = -1;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager viewPager;
 
     @Override
@@ -39,6 +42,8 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
 
         encounterController = new EncounterController(getContentResolver());
         encounterDraftController = new EncounterDraftController(getContentResolver());
+        encounterCreatureController = new EncounterCreatureController(getContentResolver());
+        encounterCreatureDraftController = new EncounterCreatureDraftController(getContentResolver());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -49,7 +54,6 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
             encounterId = b.getLong("encounterId");
         }
 
-        //createDraft();
         setupDraft();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -131,7 +135,6 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
     private void setupPager() {
         manageEncounterPagerAdapter = new ManageEncounterPagerAdapter(getSupportFragmentManager(), encounterDraftId);
 
-        // Set up the ViewPager with the sections adapter.
         viewPager = (ViewPager) findViewById(R.id.container);
         viewPager.setAdapter(manageEncounterPagerAdapter);
 
@@ -141,7 +144,6 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_manage_encounter, menu);
         return true;
     }
@@ -161,9 +163,18 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
 
     private void saveEncounter() {
         if (encounterId != -1) {
-            encounterController.updateEncounterFromDraft(encounterId, encounterDraftId);//updateEncounterToDraft();
+            Cursor encounterDraft = encounterDraftController.getEncounterDraftFromId(encounterDraftId);
+
+            encounterController.updateEncounterFromDraft(encounterId, encounterDraft);
+            encounterCreatureController.insertCreaturesFromDraftId(encounterId, encounterDraftId);
+
+            encounterDraftController.deleteDraftByEncounterId(encounterId);
         } else {
-            encounterController.insertEncounterFromDraft(encounterDraftId);
+            Cursor encounterDraft = encounterDraftController.getEncounterDraftFromId(encounterDraftId);
+
+            long newEncounterId = encounterController.insertEncounterFromDraft(encounterDraft);
+            encounterCreatureController.insertCreaturesFromDraftId(newEncounterId, encounterDraftId);
+            encounterDraftController.deleteDraftWithoutEncounterId();
         }
 
         finish();
@@ -171,10 +182,15 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
 
     @Override
     public void onAddCreature(long creatureId, String creatureName) {
-        encounterController.addCreatureToEncounterDraft(encounterDraftId, creatureId);
+        encounterCreatureDraftController.insertCreatureForEncounter(encounterDraftId, creatureId);
 
         Snackbar.make(findViewById(R.id.manage_layout), "Added " + creatureName + " successfully", Snackbar.LENGTH_SHORT)
                 .setAction("Action", null).show();
+    }
+
+    @Override
+    public void onEncounterDetailsChanged(ContentValues values) {
+        encounterDraftController.updateEncounterDraftById(encounterDraftId, values);
     }
 
     private boolean encounterExists() {

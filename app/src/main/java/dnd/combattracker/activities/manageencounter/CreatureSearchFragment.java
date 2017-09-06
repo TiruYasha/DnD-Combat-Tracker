@@ -34,7 +34,6 @@ public class CreatureSearchFragment extends Fragment implements LoaderManager.Lo
     private LinearLayoutManager layoutManager;
     private CreatureSearchFragmentListener listener;
 
-
     public CreatureSearchFragment() {
         // Required empty public constructor
     }

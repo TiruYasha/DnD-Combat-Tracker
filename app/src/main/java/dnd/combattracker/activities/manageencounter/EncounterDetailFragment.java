@@ -3,7 +3,6 @@ package dnd.combattracker.activities.manageencounter;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -22,7 +21,7 @@ import android.view.ViewGroup;
 import dnd.combattracker.R;
 import dnd.combattracker.adapters.EncounterCreatureAdapter;
 import dnd.combattracker.controllers.EncounterController;
-import dnd.combattracker.models.Creature;
+import dnd.combattracker.controllers.EncounterDraftController;
 import dnd.combattracker.repository.EncounterCreatureProvider;
 
 import static dnd.combattracker.repository.CombatTrackerContract.*;
@@ -37,7 +36,7 @@ import static dnd.combattracker.repository.CombatTrackerContract.*;
 public class EncounterDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private Cursor cursor;
-    private EncounterController encounterController;
+    private EncounterDraftController encounterDraftController;
     private long encounterDraftId;
 
     private TextInputEditText encounterName;
@@ -45,6 +44,8 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
     private RecyclerView recyclerView;
     private EncounterCreatureAdapter adapter;
     private LinearLayoutManager layoutManager;
+
+    private EncounterDetailFragmentListener listener;
 
     public EncounterDetailFragment() {
         // Required empty public constructor
@@ -69,7 +70,7 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        encounterController = new EncounterController(getActivity().getContentResolver());
+        encounterDraftController = new EncounterDraftController(getActivity().getContentResolver());
 
         Bundle b = getArguments();
         if (b != null) {
@@ -84,7 +85,7 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_encounter_detail, container, false);
 
-        cursor = encounterController.getEncounterDraftFromId(encounterDraftId);
+        cursor = encounterDraftController.getEncounterDraftFromId(encounterDraftId);
 
         encounterName = (TextInputEditText) view.findViewById(R.id.input_encounter_name);
         encounterName.addTextChangedListener(new HandleTextChange());
@@ -132,7 +133,24 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        String test = "0";
+
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof EncounterDetailFragmentListener) {
+            listener = (EncounterDetailFragmentListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement CreatureSearchFragmentListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 
     private class HandleTextChange implements TextWatcher {
@@ -150,7 +168,11 @@ public class EncounterDetailFragment extends Fragment implements LoaderManager.L
 
             values.put("name", encounterName.getText().toString());
 
-            encounterController.updateEncounterDraftById(encounterDraftId, values);
+            listener.onEncounterDetailsChanged(values);
         }
+    }
+
+    public interface EncounterDetailFragmentListener{
+        void onEncounterDetailsChanged(ContentValues values);
     }
 }

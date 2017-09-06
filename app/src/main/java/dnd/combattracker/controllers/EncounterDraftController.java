@@ -9,6 +9,8 @@ import dnd.combattracker.repository.CombatTrackerContract;
 import dnd.combattracker.repository.EncounterCreatureProvider;
 import dnd.combattracker.repository.EncounterProvider;
 
+import static dnd.combattracker.repository.CombatTrackerContract.*;
+
 public class EncounterDraftController {
     private ContentResolver contentResolver;
 
@@ -23,7 +25,7 @@ public class EncounterDraftController {
      */
     public long insertEmptyEncounterDraft() {
         ContentValues values = new ContentValues();
-        values.put(CombatTrackerContract.EncounterEntry.NAME, "");
+        values.put(EncounterEntry.NAME, "");
 
         return insertEncounterDraft(values);
     }
@@ -38,11 +40,15 @@ public class EncounterDraftController {
 
         Cursor cursor = contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, null, null);
 
-        return cursor.getCount();
+        int draftCount = cursor.getCount();
+
+        cursor.close();
+
+        return draftCount;
     }
 
     public long getOldestDraftId() {
-        String[] projection = {CombatTrackerContract.EncounterDraftEntry._ID};
+        String[] projection = {EncounterDraftEntry._ID};
         String selection = "encounterId is null";
 
         Cursor cursor = contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, null, "_id ASC");
@@ -50,13 +56,15 @@ public class EncounterDraftController {
         long draftId;
 
         cursor.moveToFirst();
-        draftId = cursor.getLong(cursor.getColumnIndex(CombatTrackerContract.EncounterDraftEntry._ID));
+        draftId = cursor.getLong(cursor.getColumnIndex(EncounterDraftEntry._ID));
+
+        cursor.close();
 
         return draftId;
     }
 
     public long getOldestDraftIdByEncounterId(long encounterId) {
-        String[] projection = {CombatTrackerContract.EncounterDraftEntry._ID};
+        String[] projection = {EncounterDraftEntry._ID};
         String selection = "encounterId = ?";
         String[] selectionArgs = {String.valueOf(encounterId)};
 
@@ -65,7 +73,9 @@ public class EncounterDraftController {
         long draftId;
 
         cursor.moveToFirst();
-        draftId = cursor.getLong(cursor.getColumnIndex(CombatTrackerContract.EncounterDraftEntry._ID));
+        draftId = cursor.getLong(cursor.getColumnIndex(EncounterDraftEntry._ID));
+
+        cursor.close();
 
         return draftId;
     }
@@ -91,7 +101,11 @@ public class EncounterDraftController {
 
         Cursor cursor = contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, null);
 
-        return cursor.getCount();
+        int draftCount = cursor.getCount();
+
+        cursor.close();
+
+        return draftCount;
     }
 
     /**
@@ -124,8 +138,8 @@ public class EncounterDraftController {
     }
 
     private void insertDraftCreaturesFromEncounter(long encounterId, long draftEncounterId) {
-        String[] projection = {CombatTrackerContract.EncounterCreatureDraftEntry.CREATURE_ID};
-        String selection = CombatTrackerContract.EncounterCreatureDraftEntry.ENCOUNTER_ID + " = ?";
+        String[] projection = {EncounterCreatureDraftEntry.CREATURE_ID};
+        String selection = EncounterCreatureDraftEntry.ENCOUNTER_ID + " = ?";
         String[] selectionArgs = {String.valueOf(encounterId)};
 
         Cursor cursor = contentResolver.query(EncounterCreatureProvider.CONTENT_URI, projection, selection, selectionArgs, null);
@@ -135,11 +149,13 @@ public class EncounterDraftController {
         int i = 0;
         while (cursor.moveToNext()) {
             ContentValues values = new ContentValues();
-            values.put(CombatTrackerContract.EncounterCreatureDraftEntry.CREATURE_ID, cursor.getLong(cursor.getColumnIndex(CombatTrackerContract.EncounterCreatureDraftEntry.CREATURE_ID)));
-            values.put(CombatTrackerContract.EncounterCreatureDraftEntry.ENCOUNTER_ID, draftEncounterId);
+            values.put(EncounterCreatureDraftEntry.CREATURE_ID, cursor.getLong(cursor.getColumnIndex(EncounterCreatureDraftEntry.CREATURE_ID)));
+            values.put(EncounterCreatureDraftEntry.ENCOUNTER_ID, draftEncounterId);
             data[i] = values;
             i++;
         }
+
+        cursor.close();
 
         contentResolver.bulkInsert(EncounterCreatureProvider.CONTENT_URI_DRAFT, data);
     }
@@ -149,5 +165,43 @@ public class EncounterDraftController {
         String[] selectionArgs = {String.valueOf(encounterDraftId)};
 
         return contentResolver.delete(EncounterProvider.CONTENT_URI_DRAFT, selectionClause, selectionArgs);
+    }
+
+    public int deleteDraftByEncounterId(long encounterId) {
+        String selectionClause = EncounterDraftEntry.ENCOUNTER_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(encounterId)};
+
+        return contentResolver.delete(EncounterProvider.CONTENT_URI_DRAFT, selectionClause, selectionArgs);
+    }
+
+    public int deleteDraftWithoutEncounterId() {
+        String selectionClause = EncounterDraftEntry.ENCOUNTER_ID + " IS NULL";
+
+        return contentResolver.delete(EncounterProvider.CONTENT_URI_DRAFT, selectionClause, null);
+    }
+
+    /**
+     * Updates the draft of the encounter
+     *
+     * @param encounterDraftId
+     * @param values
+     * @return Returns true on success, and false on failure
+     */
+    public boolean updateEncounterDraftById(long encounterDraftId, ContentValues values) {
+        String selectionClause = "_id = ?";
+        String[] selectionArgs = {String.valueOf(encounterDraftId)};
+        return contentResolver.update(EncounterProvider.CONTENT_URI_DRAFT, values, selectionClause, selectionArgs) != -1;
+    }
+
+    /**
+     * @param encounterDraftId
+     * @return Returns a cursor containing the encounterDraft
+     */
+    public Cursor getEncounterDraftFromId(long encounterDraftId) {
+        String[] projection = {"name"};
+        String selection = "_id = ?";
+        String[] selectionArgs = {String.valueOf(encounterDraftId)};
+
+        return contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, null);
     }
 }

@@ -3,14 +3,12 @@ package dnd.combattracker.controllers;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.net.Uri;
 
 import java.util.List;
 
-import dnd.combattracker.repository.EncounterCreatureProvider;
 import dnd.combattracker.repository.EncounterProvider;
 
-import static dnd.combattracker.repository.CombatTrackerContract.*;
+import static dnd.combattracker.repository.CombatTrackerContract.EncounterEntry;
 
 public class EncounterController {
 
@@ -21,114 +19,21 @@ public class EncounterController {
     }
 
     /**
-     * Insert encounter draft into the database
+     * Copy the draft over to the real table
      *
-     * @param values values to insert
-     * @return Returns the inserted id
+     * @param encounterDraft
+     * @return
      */
-    public long insertEncounterDraft(ContentValues values) {
-        return getIdFromUri(contentResolver.insert(EncounterProvider.CONTENT_URI_DRAFT, values));
-    }
-
-    /**
-     * Copy draft to the real table
-     *
-     * @param draftId draftId
-     * @return return inserted id
-     */
-    public long insertEncounterFromDraft(long draftId) {
-        Cursor cursor = getEncounterDraftFromId(draftId);
-
+    public long insertEncounterFromDraft(Cursor encounterDraft) {
         ContentValues data = new ContentValues();
 
-        while (cursor.moveToNext()) {
-            data.put("name", cursor.getString(cursor.getColumnIndex("name")));
+        while (encounterDraft.moveToNext()) {
+            data.put("name", encounterDraft.getString(encounterDraft.getColumnIndex("name")));
         }
 
-        cursor.close();
+        encounterDraft.close();
 
-        long encounterId = getIdFromUri(contentResolver.insert(EncounterProvider.CONTENT_URI, data));
-
-        insertCreaturesFromDraft(encounterId, draftId);
-
-        return encounterId;
-    }
-
-    private void insertCreaturesFromDraft(long encounterId, long encounterDraftId) {
-        String selection = EncounterCreatureDraftEntry.ENCOUNTER_ID + " = ?";
-        String[] selectionArgs = {String.valueOf(encounterDraftId)};
-
-        Cursor cursor = contentResolver.query(EncounterCreatureProvider.CONTENT_URI_DRAFT, null, selection, selectionArgs, null);
-
-        ContentValues[] values = new ContentValues[cursor.getCount()];
-
-        int i = 0;
-        while(cursor.moveToNext()){
-            ContentValues data = new ContentValues();
-            data.put(EncounterCreatureEntry.CREATURE_ID, cursor.getLong(cursor.getColumnIndex(EncounterCreatureDraftEntry.CREATURE_ID)));
-            data.put(EncounterCreatureEntry.ENCOUNTER_ID, encounterId);
-
-            values[i] = data;
-            i++;
-        }
-
-        String selectionOfficial = EncounterCreatureEntry.ENCOUNTER_ID + " = ?";
-        String[] selectionArgsOfficial = {String.valueOf(encounterId)};
-
-        contentResolver.delete(EncounterCreatureProvider.CONTENT_URI, selectionOfficial, selectionArgsOfficial);
-        contentResolver.bulkInsert(EncounterCreatureProvider.CONTENT_URI, values);
-        contentResolver.delete(EncounterCreatureProvider.CONTENT_URI_DRAFT, selection, selectionArgs);
-
-    }
-
-    /**
-     * Create draft copy of the official encounter
-     *
-     * @param encounterId
-     * @return The draftId
-     */
-    public long insertDraftFromEncounter(long encounterId) {
-        String[] projection = {"name"};
-        String selection = "_id = ?";
-        String[] selectionArgs = {String.valueOf(encounterId)};
-
-        Cursor cursor = contentResolver.query(EncounterProvider.CONTENT_URI, projection, selection, selectionArgs, null);
-
-        ContentValues data = new ContentValues();
-
-        while (cursor.moveToNext()) {
-            data.put("name", cursor.getString(cursor.getColumnIndex("name")));
-            data.put("encounterId", encounterId);
-        }
-
-        cursor.close();
-
-        long newEncounterId = getIdFromUri(contentResolver.insert(EncounterProvider.CONTENT_URI_DRAFT, data));
-
-        insertDraftCreaturesFromEncounter(encounterId, newEncounterId);
-
-        return newEncounterId;
-    }
-
-    private void insertDraftCreaturesFromEncounter(long encounterId, long draftEncounterId) {
-        String[] projection = {EncounterCreatureDraftEntry.CREATURE_ID};
-        String selection = EncounterCreatureDraftEntry.ENCOUNTER_ID + " = ?";
-        String[] selectionArgs = {String.valueOf(encounterId)};
-
-        Cursor cursor = contentResolver.query(EncounterCreatureProvider.CONTENT_URI, projection, selection, selectionArgs, null);
-
-        ContentValues[] data = new ContentValues[cursor.getCount()];
-
-        int i = 0;
-        while (cursor.moveToNext()) {
-            ContentValues values = new ContentValues();
-            values.put(EncounterCreatureDraftEntry.CREATURE_ID, cursor.getLong(cursor.getColumnIndex(EncounterCreatureDraftEntry.CREATURE_ID)));
-            values.put(EncounterCreatureDraftEntry.ENCOUNTER_ID, draftEncounterId);
-            data[i] = values;
-            i++;
-        }
-
-        contentResolver.bulkInsert(EncounterCreatureProvider.CONTENT_URI_DRAFT, data);
+        return ControllerUtil.getIdFromUri(contentResolver.insert(EncounterProvider.CONTENT_URI, data));
     }
 
     /**
@@ -140,7 +45,7 @@ public class EncounterController {
     public int deleteEncounters(List<String> encounterIds) {
         String questionMarks = "";
 
-        for (String id : encounterIds) {
+        for (String ignored : encounterIds) {
             questionMarks += "?, ";
         }
         questionMarks = questionMarks.substring(0, questionMarks.length() - 2);
@@ -149,96 +54,24 @@ public class EncounterController {
     }
 
     /**
-     * Updates the draft of the encounter
-     *
-     * @param id
-     * @param values
-     * @return Returns true on success, and false on failure
-     */
-    public boolean updateEncounterDraftById(long id, ContentValues values) {
-        String selectionClause = "_id = ?";
-        String[] selectionArgs = {String.valueOf(id)};
-        return contentResolver.update(EncounterProvider.CONTENT_URI_DRAFT, values, selectionClause, selectionArgs) != -1;
-    }
-
-    /**
-     * @param id
-     * @return Returns a cursor
-     */
-    public Cursor getEncounterDraftFromId(long id) {
-        String[] projection = {"name"};
-        String selection = "_id = ?";
-        String[] selectionArgs = {String.valueOf(id)};
-
-        return contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, null);
-    }
-
-    /**
      * Update the official encounter from the draft
      *
      * @param encounterId
-     * @param encounterDraftId
+     * @param encounterDraft
      * @return Return true or false
      */
-    public boolean updateEncounterFromDraft(long encounterId, long encounterDraftId) {
-        Cursor cursor = getEncounterDraftFromId(encounterDraftId);
-
+    public boolean updateEncounterFromDraft(long encounterId, Cursor encounterDraft) {
         String selectionClause = "_id = ?";
         String[] selectionArgs = {String.valueOf(encounterId)};
 
         ContentValues values = new ContentValues();
 
-        while (cursor.moveToNext()) {
-            values.put(EncounterEntry.NAME, cursor.getString(cursor.getColumnIndex(EncounterEntry.NAME)));
+        while (encounterDraft.moveToNext()) {
+            values.put(EncounterEntry.NAME, encounterDraft.getString(encounterDraft.getColumnIndex(EncounterEntry.NAME)));
         }
 
-        cursor.close();
-
-        insertCreaturesFromDraft(encounterId, encounterDraftId);
+        encounterDraft.close();
 
         return contentResolver.update(EncounterProvider.CONTENT_URI, values, selectionClause, selectionArgs) != -1;
-    }
-
-    public long getDraftIdByEncounterId(long encounterId) {
-        String[] projection = {"_id"};
-        String selection = "encounterId = ?";
-        String[] selectionArgs = {String.valueOf(encounterId)};
-
-        Cursor cursor = contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, null);
-
-        long id = -1;
-
-        while (cursor.moveToNext()) {
-            id = cursor.getLong(cursor.getColumnIndex("_id"));
-        }
-
-        return id;
-    }
-
-    public long getDraftIdWithoutEncounterId() {
-        String[] projection = {"_id"};
-        String selection = "encounterId is null";
-
-        Cursor cursor = contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, null, null);
-
-        long draftId = -1;
-
-        while (cursor.moveToNext()) {
-            draftId = cursor.getLong(cursor.getColumnIndex("_id"));
-        }
-
-        return draftId;
-    }
-
-    public long addCreatureToEncounterDraft(long encounterId, long creatureId) {
-        ContentValues values = new ContentValues();
-        values.put(EncounterCreatureDraftEntry.ENCOUNTER_ID, encounterId);
-        values.put(EncounterCreatureDraftEntry.CREATURE_ID, creatureId);
-
-        return getIdFromUri(contentResolver.insert(EncounterCreatureProvider.CONTENT_URI_DRAFT, values));
-    }
-
-    private long getIdFromUri(Uri result) {
-        return Long.parseLong(result.getLastPathSegment());
     }
 }
