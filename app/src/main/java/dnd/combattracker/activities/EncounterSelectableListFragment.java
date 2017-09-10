@@ -45,6 +45,7 @@ public class EncounterSelectableListFragment extends Fragment implements LoaderM
         view.setTag("RecyclerViewFragment");
 
         setHasOptionsMenu(true);
+        //getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
 
         encounterController = new EncounterController(getActivity().getContentResolver());
 
@@ -71,6 +72,7 @@ public class EncounterSelectableListFragment extends Fragment implements LoaderM
         super.onActivityCreated(savedInstanceState);
 
         getActivity().getSupportLoaderManager().initLoader(0, null, this);
+
     }
 
     @Override

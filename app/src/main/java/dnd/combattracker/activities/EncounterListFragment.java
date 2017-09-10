@@ -1,5 +1,6 @@
 package dnd.combattracker.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
     private RecyclerView recyclerView;
     private EncounterAdapter adapter;
     private LinearLayoutManager layoutManager;
+    private OpenSelectableListener listener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -78,6 +80,23 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
     }
     //endregion
 
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof OpenSelectableListener){
+            listener = (OpenSelectableListener) context;
+        } else{
+            throw new RuntimeException(context.toString() + " must implement OpenSelectableListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
     @Override
     public void onItemClick(View itemView, int position) {
         Intent intent = new Intent(getActivity(), ManageEncounterActivity.class);
@@ -91,17 +110,22 @@ public class EncounterListFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public void onLongItemClick(View itemView, int position) {
-        EncounterSelectableListFragment fragment = new EncounterSelectableListFragment();
-        Bundle args = new Bundle();
-        args.putInt("selected", position);
-        fragment.setArguments(args);
+        listener.openSelectable(position);;
+//        EncounterSelectableListFragment fragment = new EncounterSelectableListFragment();
+//        Bundle args = new Bundle();
+//        args.putInt("selected", position);
+//        fragment.setArguments(args);
+//
+//        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+//        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//
+//        fragmentTransaction.addToBackStack("selector");
+//        fragmentTransaction.replace(R.id.frame_layout_main, fragment);
+//
+//        fragmentTransaction.commit();
+    }
 
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        fragmentTransaction.addToBackStack("selector");
-        fragmentTransaction.replace(R.id.frame_layout_main, fragment);
-
-        fragmentTransaction.commit();
+    public interface OpenSelectableListener{
+        void openSelectable(int selectedItem);
     }
 }
