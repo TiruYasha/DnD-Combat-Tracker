@@ -18,10 +18,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activities.manageencounter.ManageEncounterActivity"
             android:label="@string/title_activity_manage_encounter"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <provider
             android:name=".repository.EncounterProvider"
@@ -35,6 +36,9 @@
             android:name=".repository.EncounterCreatureProvider"
             android:authorities="dnd.combattracker.repository.EncounterCreatureProvider"
             android:exported="false" />
+
+
     </application>
+
 
 </manifest>

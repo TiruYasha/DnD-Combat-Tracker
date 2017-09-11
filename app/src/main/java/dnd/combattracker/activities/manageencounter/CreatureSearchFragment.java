@@ -10,9 +10,15 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import dnd.combattracker.R;
 import dnd.combattracker.adapters.CreatureSearchAdapter;
@@ -33,6 +39,8 @@ public class CreatureSearchFragment extends Fragment implements LoaderManager.Lo
     private CreatureSearchAdapter adapter;
     private LinearLayoutManager layoutManager;
     private CreatureSearchFragmentListener listener;
+
+    EditText searchCreature;
 
     public CreatureSearchFragment() {
         // Required empty public constructor
@@ -59,6 +67,9 @@ public class CreatureSearchFragment extends Fragment implements LoaderManager.Lo
         adapter = new CreatureSearchAdapter(null);
         adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
+
+        searchCreature = (EditText) getActivity().findViewById(R.id.searchCreatureText);
+        searchCreature.addTextChangedListener(new HandleCreatureSearch());
 
         // Inflate the layout for this fragment
         return view;
@@ -120,7 +131,28 @@ public class CreatureSearchFragment extends Fragment implements LoaderManager.Lo
         listener = null;
     }
 
+    private class HandleCreatureSearch implements TextWatcher {
+
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(final Editable editable) {
+            Cursor creatures = listener.searchCreature(searchCreature.getText().toString());
+
+            adapter.swapCursor(creatures);
+        }
+    }
+
     public interface CreatureSearchFragmentListener {
         void onAddCreature(long creatureId, String creatureName);
+        Cursor searchCreature(String searchTerm);
     }
 }

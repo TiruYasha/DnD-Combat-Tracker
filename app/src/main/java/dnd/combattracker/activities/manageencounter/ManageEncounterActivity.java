@@ -13,9 +13,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 
 import dnd.combattracker.R;
 import dnd.combattracker.adapters.ManageEncounterPagerAdapter;
+import dnd.combattracker.controllers.CreatureController;
 import dnd.combattracker.controllers.EncounterController;
 import dnd.combattracker.controllers.EncounterCreatureController;
 import dnd.combattracker.controllers.EncounterCreatureDraftController;
@@ -29,11 +31,13 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
     private EncounterDraftController encounterDraftController;
     private EncounterCreatureController encounterCreatureController;
     private EncounterCreatureDraftController encounterCreatureDraftController;
+    private CreatureController creatureController;
 
     private long encounterId = -1;
     private long encounterDraftId = -1;
 
     private ViewPager viewPager;
+    private EditText searchCreature;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,9 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
         encounterDraftController = new EncounterDraftController(getContentResolver());
         encounterCreatureController = new EncounterCreatureController(getContentResolver());
         encounterCreatureDraftController = new EncounterCreatureDraftController(getContentResolver());
+        creatureController = new CreatureController(getContentResolver());
+
+        searchCreature = (EditText) findViewById(R.id.searchCreatureText);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -137,6 +144,7 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
 
         viewPager = (ViewPager) findViewById(R.id.container);
         viewPager.setAdapter(manageEncounterPagerAdapter);
+        viewPager.addOnPageChangeListener(new PageChangedListener());
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(viewPager);
@@ -145,6 +153,7 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_manage_encounter, menu);
+
         return true;
     }
 
@@ -189,11 +198,38 @@ public class ManageEncounterActivity extends AppCompatActivity implements Creatu
     }
 
     @Override
+    public Cursor searchCreature(String searchTerm) {
+        return creatureController.search(searchTerm);
+    }
+
+    @Override
     public void onEncounterDetailsChanged(ContentValues values) {
         encounterDraftController.updateEncounterDraftById(encounterDraftId, values);
     }
 
     private boolean encounterExists() {
         return encounterId != -1;
+    }
+
+    private class PageChangedListener implements ViewPager.OnPageChangeListener {
+
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            if (position == 1) {
+                searchCreature.setVisibility(View.VISIBLE);
+            } else {
+                searchCreature.setVisibility(View.GONE);
+            }
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+
+        }
     }
 }
