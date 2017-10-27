@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="dnd.combattracker">
+    package="tiru.initiative">
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
@@ -19,26 +20,15 @@
             </intent-filter>
         </activity>
 
+        <provider
+            android:name=".providers.EncounterProvider"
+            android:authorities="tiru.initiative.providers.EncounterProvider"
+            android:exported="false" />
+
         <activity
-            android:name=".activities.manageencounter.ManageEncounterActivity"
+            android:name=".activities.ManageEncounterActivity"
             android:label="@string/title_activity_manage_encounter"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-
-        <provider
-            android:name=".repository.EncounterProvider"
-            android:authorities="dnd.combattracker.repository.EncounterProvider"
-            android:exported="false" />
-        <provider
-            android:name=".repository.CreatureProvider"
-            android:authorities="dnd.combattracker.repository.CreatureProvider"
-            android:exported="false" />
-        <provider
-            android:name=".repository.EncounterCreatureProvider"
-            android:authorities="dnd.combattracker.repository.EncounterCreatureProvider"
-            android:exported="false" />
-
-
+            android:theme="@style/AppTheme"></activity>
     </application>
-
 
 </manifest>

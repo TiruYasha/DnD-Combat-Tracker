@@ -1,9 +1,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="tiru.initiative.activities.ManageEncounterActivity">
     <item
         android:id="@+id/action_add_encounter"
         android:icon="@drawable/ic_menu_save"
         android:title="@string/save_encounter"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_restore_draft"
+        android:title="@string/action_restore_draft"
+        app:showAsAction="never"
+        />
 </menu>

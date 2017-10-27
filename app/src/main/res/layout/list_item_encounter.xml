@@ -4,14 +4,13 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingTop="8dp"
-    android:background="?android:attr/selectableItemBackground"
-    android:clickable="true">
+    android:background="?android:attr/selectableItemBackground" >
 
     <TextView
         android:id="@+id/list_item_encounter_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView"
+        android:text=""
         android:layout_centerVertical="true"
         android:fontFamily="sans-serif"
         android:textSize="16sp"
