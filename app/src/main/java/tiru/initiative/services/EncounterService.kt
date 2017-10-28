@@ -61,7 +61,7 @@ class EncounterService(private val contentResolver: ContentResolver) {
     }
 
     private fun deleteNotUsedDrafts(id: Long?, draftId: Long) {
-        val selectionClause = "_id != ? && " + if (id == null) "${EncounterDraftEntry.ENCOUNTER_ID} is null" else "${EncounterDraftEntry.ENCOUNTER_ID} = ?"
+        val selectionClause = "_id != ? AND " + if (id == null) "${EncounterDraftEntry.ENCOUNTER_ID} is null" else "${EncounterDraftEntry.ENCOUNTER_ID} = ?"
         val selectionArgs = if (id == null) {
             arrayOf(draftId.toString())
         } else {
@@ -112,7 +112,7 @@ class EncounterService(private val contentResolver: ContentResolver) {
     }
 
     private fun deleteOldestDraft(id: Long?) {
-        val draftId = getLastDraftIdByEncounterId(id)
+        val draftId = getOldestDraftIdByEncounterId(id)
 
         val selectionClause = "_id = ?"
         val selectionArgs = arrayOf(draftId.toString())
@@ -120,12 +120,12 @@ class EncounterService(private val contentResolver: ContentResolver) {
         contentResolver.delete(EncounterProvider.CONTENT_URI_DRAFT, selectionClause, selectionArgs)
     }
 
-    private fun getLastDraftIdByEncounterId(id: Long?): Long {
+    private fun getNewestDraftIdByEncounterId(id: Long?): Long {
         val projection = arrayOf("_id")
         val selection = if (id == null) "${EncounterDraftEntry.ENCOUNTER_ID} is null" else "${EncounterDraftEntry.ENCOUNTER_ID} = ?"
         val selectionArgs: Array<String>? = if (id == null) null else arrayOf("" + id)
 
-        contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, "_id ASC").use { cursor ->
+        contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, "_id DESC").use { cursor ->
             cursor.moveToFirst()
             return cursor.getLong(0)
         }
@@ -136,7 +136,7 @@ class EncounterService(private val contentResolver: ContentResolver) {
         val selection = if (id == null) "${EncounterDraftEntry.ENCOUNTER_ID} is null" else "${EncounterDraftEntry.ENCOUNTER_ID} = ?"
         val selectionArgs: Array<String>? = if (id == null) null else arrayOf("" + id)
 
-        contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, "_id DESC").use { cursor ->
+        contentResolver.query(EncounterProvider.CONTENT_URI_DRAFT, projection, selection, selectionArgs, "_id ASC").use { cursor ->
             cursor.moveToFirst()
             return cursor.getLong(0)
         }

@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_manage_encounter_detail.*
 import tiru.initiative.R
+import tiru.initiative.models.Encounter
 import tiru.initiative.presenters.BasePresenter
 import tiru.initiative.presenters.EncounterDetailsPresenter
 import tiru.initiative.presenters.EncounterDetailsView
@@ -33,7 +34,14 @@ class EncounterDetailFragment : Fragment(), EncounterDetailsView {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        listener.onEncounterDetailsFragmentCreated(this)
+
         input_encounter_name.addTextChangedListener(NameChanged())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        presenter.start()
     }
 
     override fun onAttach(context: Context?) {
@@ -49,8 +57,8 @@ class EncounterDetailFragment : Fragment(), EncounterDetailsView {
         this.presenter = presenter
     }
 
-    override fun refreshDetails() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun refreshDetails(encounter: Encounter) {
+        input_encounter_name.setText(encounter.name)
     }
 
     inner class NameChanged : TextWatcher {
@@ -65,5 +73,6 @@ class EncounterDetailFragment : Fragment(), EncounterDetailsView {
 }
 
 interface EncounterDetailFragmentListener{
+    fun onEncounterDetailsFragmentCreated(fragment: EncounterDetailFragment)
     fun onEncounterNameChanged(name: String): Future<Unit>
 }

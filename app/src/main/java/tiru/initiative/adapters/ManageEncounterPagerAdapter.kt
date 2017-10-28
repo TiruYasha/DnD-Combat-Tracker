@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentStatePagerAdapter
 import tiru.initiative.fragments.EncounterDetailFragment
 
 
-class ManageEncounterPagerAdapter(fm: FragmentManager?, private var encounterDraftId: Long?) : FragmentStatePagerAdapter(fm) {
+class ManageEncounterPagerAdapter(fm: FragmentManager?) : FragmentStatePagerAdapter(fm) {
     private val fragmentList = ArrayList<Fragment>()
 
     override fun getItem(position: Int): Fragment {
@@ -16,12 +16,17 @@ class ManageEncounterPagerAdapter(fm: FragmentManager?, private var encounterDra
                 fragmentList.add(fragment)
                 return fragment
             }
-            else -> EncounterDetailFragment.newInstance()
+
+            else -> {
+                val fragment: Fragment = EncounterDetailFragment.newInstance()
+                fragmentList.add(fragment)
+                return fragment
+            }
         }
     }
 
     override fun getCount(): Int {
-        return 2
+        return 1
     }
 
     fun getFragmentByPosition(position: Int): Fragment{

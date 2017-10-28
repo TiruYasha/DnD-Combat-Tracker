@@ -13,11 +13,11 @@ import tiru.initiative.adapters.ManageEncounterPagerAdapter
 import tiru.initiative.fragments.EncounterDetailFragment
 import tiru.initiative.fragments.EncounterDetailFragmentListener
 import tiru.initiative.presenters.EncounterDetailsPresenter
+import tiru.initiative.presenters.EncounterDetailsView
 import tiru.initiative.services.EncounterService
 import java.util.concurrent.Future
 
 class ManageEncounterActivity : AppCompatActivity(), EncounterDetailFragmentListener {
-
     private lateinit var encounterDetailsPresenter: EncounterDetailsPresenter
 
     private lateinit var pagerAdapter: ManageEncounterPagerAdapter
@@ -35,39 +35,20 @@ class ManageEncounterActivity : AppCompatActivity(), EncounterDetailFragmentList
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        pagerAdapter = ManageEncounterPagerAdapter(supportFragmentManager, null)
-
-        container.adapter = pagerAdapter
-
-        tabs.setupWithViewPager(container)
-
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
-        }
-
-        //TODO presenter with pageadapter
-        val encounterDetailsFragment = pagerAdapter.getFragmentByPosition(0)
-
-        if(encounterDetailsFragment is EncounterDetailFragment){
-            encounterDetailsPresenter = EncounterDetailsPresenter(encounterDetailsFragment, loaderManager, LoaderProvider(this), encounterDraftId)
-        }else{
-            throw RuntimeException("$encounterDetailsFragment Should be of type EncounterDetailFragment")
         }
 
         setupDraft()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_manage_encounter, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
 
         when (id) {
@@ -86,18 +67,18 @@ class ManageEncounterActivity : AppCompatActivity(), EncounterDetailFragmentList
             }
             else -> return super.onOptionsItemSelected(item)
         }
-
     }
 
-    private fun setupDraft() = doAsync {
-        encounterDraftId = service.setupDraft(encounterId)
+    override fun onEncounterDetailsFragmentCreated(fragment: EncounterDetailFragment) {
+        encounterDetailsPresenter = EncounterDetailsPresenter(fragment, loaderManager, LoaderProvider(this), encounterDraftId)
+    }
 
-        if(service.getDraftCountByEncounterId(encounterId) > 1){
-            uiThread {
-                showRestoreDraftMessage()
+    private fun initializePageradapter() {
+        pagerAdapter = ManageEncounterPagerAdapter(supportFragmentManager)
 
-            }
-        }
+        container.adapter = pagerAdapter
+
+        tabs.setupWithViewPager(container)
     }
 
     private fun showRestoreDraftMessage() {
@@ -107,12 +88,29 @@ class ManageEncounterActivity : AppCompatActivity(), EncounterDetailFragmentList
                 }).show()
     }
 
-    private fun restoreDraft() = doAsync{
-        val encounter = service.restoreDraft(encounterId)
-
-    }
-
     override fun onEncounterNameChanged(name: String): Future<Unit> = doAsync {
         service.updateDraftName(encounterDraftId, name)
+    }
+
+    private fun setupDraft() = doAsync {
+        encounterDraftId = service.setupDraft(encounterId)
+
+        uiThread {
+            initializePageradapter()
+        }
+
+        if(service.getDraftCountByEncounterId(encounterId) > 1){
+            uiThread {
+                showRestoreDraftMessage()
+            }
+        }
+    }
+
+    private fun restoreDraft() = doAsync{
+        val encounter = service.restoreDraft(encounterId)
+        encounterDraftId = encounter.id
+        uiThread {
+            encounterDetailsPresenter.loadDetails(encounter)
+        }
     }
 }
